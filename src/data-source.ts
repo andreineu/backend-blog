@@ -23,6 +23,7 @@ export const AppDataSource = new DataSource({
   logging: false,
   entities: [User, Post, PostVote, CommentVote, Comment, Community],
   migrations: ["./migrations/*.ts"],
+  ssl: { rejectUnauthorized: false },
   subscribers: [
     PostSubscriber,
     PostVoteSubscriber,
