@@ -18,7 +18,13 @@ import { AppDataSource } from "./data-source";
 import { UserResolver } from "./resolvers/user";
 import { PostResolver } from "./resolvers/post";
 
-import { COOKIE_NAME, SESSION_SECRET, __prod__ } from "./constants";
+import {
+  COOKIE_NAME,
+  cors_origin,
+  port,
+  SESSION_SECRET,
+  __prod__
+} from "./constants";
 import { VoteResolver } from "./resolvers/vote";
 import { userLoader } from "./utils/loaders/UserLoader";
 import { postVoteLoader, commentVoteLoader } from "./utils/loaders/voteLoader";
@@ -39,7 +45,7 @@ async function main() {
 
   app.use(
     cors({
-      origin: "http://localhost:3000",
+      origin: cors_origin,
       credentials: true
     })
   );
@@ -92,7 +98,7 @@ async function main() {
 
   apolloServer.applyMiddleware({ app, cors: false });
 
-  app.listen(4000, () => {
+  app.listen(port, () => {
     console.log("express server started");
   });
 }
