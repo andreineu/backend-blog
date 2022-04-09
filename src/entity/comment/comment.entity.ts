@@ -1,4 +1,4 @@
-import { ObjectType, Field, Int, ID } from "type-graphql";
+import { ObjectType, Field, Int } from "type-graphql";
 import {
   Entity,
   BaseEntity,
@@ -17,11 +17,11 @@ import { CommentVote } from "../vote";
 @ObjectType()
 @Entity()
 export class Comment extends BaseEntity {
-  @Field(() => ID)
+  @Field(() => Int)
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Field(() => ID)
+  @Field(() => Int)
   @Column()
   authorId: number;
 
@@ -29,7 +29,7 @@ export class Comment extends BaseEntity {
   @ManyToOne(() => User, (user) => user.comments)
   author: User;
 
-  @Field(() => ID)
+  @Field(() => Int)
   @Column()
   postId: number;
 
@@ -52,7 +52,7 @@ export class Comment extends BaseEntity {
   @OneToMany(() => CommentVote, (vote) => vote.comment)
   votes: CommentVote[];
 
-  @Field(() => ID, { nullable: true })
+  @Field(() => Int, { nullable: true })
   @Column({ nullable: true })
   parentId: number;
 

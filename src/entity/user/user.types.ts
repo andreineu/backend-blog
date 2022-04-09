@@ -2,7 +2,7 @@ import {
   ObjectType,
   Field,
   ArgsType,
-  ID,
+  Int,
   registerEnumType
 } from "type-graphql";
 import { User } from ".";
@@ -10,7 +10,7 @@ import { FieldError } from "../../types";
 
 @ObjectType()
 export class Author {
-  @Field(() => ID)
+  @Field(() => Int)
   id: number;
 
   @Field()

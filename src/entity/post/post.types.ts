@@ -8,14 +8,15 @@ import {
   ID
 } from "type-graphql";
 import { Post } from ".";
-import { pageInfo, PaginationArgs, SortKeys } from "../../types";
+import { PageInfo, PaginationArgs, SortKeys } from "../../types";
 
 @ObjectType()
 export class PaginatedPosts {
   @Field(() => [Post])
   items: Post[];
-  @Field(() => pageInfo)
-  pageInfo: pageInfo;
+
+  @Field(() => PageInfo)
+  pageInfo: PageInfo;
 }
 
 @ArgsType()
@@ -23,13 +24,13 @@ export class GetPostsArgs extends PaginationArgs {
   @Field(() => SortKeys, { nullable: true })
   sortKey?: SortKeys;
 
-  @Field(() => ID, { nullable: true })
+  @Field(() => Int, { nullable: true })
   userId?: number;
 
   @Field(() => String, { nullable: true })
   username?: string;
 
-  @Field(() => ID, { nullable: true })
+  @Field(() => Int, { nullable: true })
   communityId?: number;
 
   @Field(() => String, { nullable: true })
@@ -44,6 +45,6 @@ export class PostInputArgs {
   @Field()
   title: string;
 
-  @Field(() => ID, { nullable: true })
+  @Field(() => Int, { nullable: true })
   communityId?: number;
 }

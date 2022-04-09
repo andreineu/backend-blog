@@ -1,4 +1,4 @@
-import { Field, ID, Int, ObjectType } from "type-graphql";
+import { Field, Int, ObjectType } from "type-graphql";
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -19,7 +19,7 @@ import { Community } from "../community";
 @ObjectType()
 @Entity()
 export class User extends BaseEntity {
-  @Field(() => ID)
+  @Field(() => Int)
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -38,11 +38,38 @@ export class User extends BaseEntity {
   @Column({ nullable: true })
   avatar: string | null;
 
+  /**
+   * counters.   *
+   * post counter chnages via post subscriber.
+   * follower counter changes in resolver mutation only
+   * TODO:
+   * rating counter changes via vote subscriber
+   */
+  @Field(() => Int)
+  @Column({ type: "int", default: 0 })
+  rating: number;
+
+  @Field(() => Int)
+  @Column({ type: "int", default: 0 })
+  totalFollowers: number;
+
+  @Field(() => Int)
+  @Column({ type: "int", default: 0 })
+  totalPosts: number;
+
+  /**
+   * created posts
+   */
+
   @RelationId((user: User) => user.posts)
   postIds: number[];
 
   @OneToMany(() => Post, (post) => post.author)
   posts: Post[];
+
+  /**
+   * created communities
+   */
 
   @RelationId((user: User) => user.communities)
   communityIds: number[];
@@ -63,7 +90,6 @@ export class User extends BaseEntity {
 
   /**
    * subscription to user relationship
-   * (subscribers and subscriptions to users)
    */
 
   @RelationId((user: User) => user.followingUsers)
@@ -72,6 +98,10 @@ export class User extends BaseEntity {
   @ManyToMany(() => User, (user) => user.subscribers, { cascade: true })
   @JoinTable()
   followingUsers: User[];
+
+  /**
+   * active subscribers
+   */
 
   @RelationId((user: User) => user.subscribers)
   subscriberIds: number[];

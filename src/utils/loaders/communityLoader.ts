@@ -6,7 +6,7 @@ export const communityLoader = new DataLoader<number, CommunityBase>(
   async (commIds) => {
     const communities = await Community.findBy({ id: In(commIds as number[]) });
 
-    const map: Record<string, Community> = {};
+    const map: Record<number, Community> = {};
 
     communities.forEach((c) => (map[c.id] = c));
 

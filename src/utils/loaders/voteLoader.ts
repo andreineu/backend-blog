@@ -15,7 +15,7 @@ export const postVoteLoader = new DataLoader<Keys, PostVote>(async (keys) => {
     }
   });
 
-  const votesMap: Record<string, PostVote> = {};
+  const votesMap: Record<number, PostVote> = {};
 
   votes.forEach((v) => {
     votesMap[`userId:${v.userId}|postId:${v.postId}`] = v;
@@ -38,7 +38,7 @@ export const commentVoteLoader = new DataLoader<CKeys, CommentVote>(
       }
     });
 
-    const votesMap: Record<string, CommentVote> = {};
+    const votesMap: Record<number, CommentVote> = {};
 
     votes.forEach((v) => {
       votesMap[`userId:${v.userId}|commentId:${v.commentId}`] = v;

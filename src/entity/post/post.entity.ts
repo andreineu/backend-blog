@@ -1,4 +1,4 @@
-import { Field, ID, Int, ObjectType } from "type-graphql";
+import { Field, Int, ObjectType } from "type-graphql";
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -18,19 +18,19 @@ import { Community, CommunityBase } from "../community";
 @ObjectType()
 @Entity()
 export class Post extends BaseEntity {
-  @Field(() => ID)
+  @Field(() => Int)
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Field(() => ID)
+  @Field(() => Int)
   @Column()
   authorId: number;
 
   @Field(() => Author)
   @ManyToOne(() => User, (user) => user.posts)
-  author: Author;
+  author: User;
 
-  @Field(() => ID, { nullable: true })
+  @Field(() => Int, { nullable: true })
   @RelationId((post: Post) => post.community)
   communityId: number;
 

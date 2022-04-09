@@ -9,7 +9,6 @@ import {
 } from "type-graphql";
 import { communityLoader } from "../utils/loaders/communityLoader";
 
-import { postLoader } from "../utils/loaders/PostLoader";
 import { userLoader } from "../utils/loaders/UserLoader";
 import { postVoteLoader, commentVoteLoader } from "../utils/loaders/voteLoader";
 
@@ -19,28 +18,28 @@ export type MyContext = {
   };
   res: Response;
   userLoader: typeof userLoader;
-  postLoader: typeof postLoader;
+
   postVoteLoader: typeof postVoteLoader;
   commentVoteLoader: typeof commentVoteLoader;
   communityLoader: typeof communityLoader;
 };
 
 @ObjectType()
-export class pageInfo {
+export class PageInfo {
   @Field(() => Boolean)
   hasNextPage: boolean;
+
   @Field(() => String)
   endCursor: string;
 }
 
 export enum SortKeys {
   RATING = "rating",
-  CREATEDAT = "createdAt"
+  CREATED_AT = "createdAt"
 }
 
 registerEnumType(SortKeys, {
-  name: "SortKeys",
-  description: "basic sort keys"
+  name: "SortKeys"
 });
 
 @ArgsType()
@@ -56,6 +55,7 @@ export class PaginationArgs {
 export class FieldError {
   @Field()
   field: string;
+
   @Field()
   message: string;
 }
@@ -64,6 +64,7 @@ export class FieldError {
 export class CreateResponse {
   @Field(() => [FieldError], { nullable: true })
   errors?: FieldError[];
+
   @Field(() => Boolean, { nullable: true })
   created?: boolean;
 }

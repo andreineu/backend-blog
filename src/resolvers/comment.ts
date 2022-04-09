@@ -2,7 +2,6 @@ import {
   Arg,
   Ctx,
   FieldResolver,
-  ID,
   Int,
   Mutation,
   Query,
@@ -20,13 +19,6 @@ import { Post } from "../entity/post";
 
 @Resolver(Comment)
 export class CommentResolver implements ResolverInterface<Comment> {
-  //TODO: delete this query - devonly
-  @Query(() => [Comment])
-  async getComments() {
-    const comments = await Comment.find();
-    return comments;
-  }
-
   @FieldResolver()
   async author(@Root() comment: Comment, @Ctx() { userLoader }: MyContext) {
     const users = await userLoader.load(comment.authorId);
@@ -46,9 +38,9 @@ export class CommentResolver implements ResolverInterface<Comment> {
   }
 
   @Query(() => [Comment])
-  async comments(@Arg("postId", () => ID) postId: number) {
+  async comments(@Arg("postId", () => Int) postId: number) {
     const comments = await Comment.find({
-      where: { postId },
+      where: { postId: +postId },
       order: { createdAt: "ASC" }
     });
     return comments;
@@ -58,19 +50,18 @@ export class CommentResolver implements ResolverInterface<Comment> {
   @UseMiddleware(IsAuth())
   async writeComment(
     @Arg("body", () => String) body: string,
-    @Arg("postId", () => ID) postId: number,
-    @Arg("parentId", () => ID, { nullable: true }) parentId: number | null,
+    @Arg("postId", () => Int) postId: number,
+    @Arg("parentId", () => Int, { nullable: true }) parentId: number | null,
     @Ctx()
     { req }: MyContext
   ): Promise<Boolean> {
-    const { userId } = req.session;
+    const authorId = req.session.userId;
     await Comment.insert({
-      authorId: userId,
+      authorId,
       postId,
       body,
       parentId
     });
-    await Post.getRepository().increment({ id: postId }, "totalComments", 1);
     return true;
   }
 }

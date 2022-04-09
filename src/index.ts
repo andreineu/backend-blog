@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import "dotenv";
+
 import { ApolloServer } from "apollo-server-express";
 import express from "express";
 import { buildSchema } from "type-graphql";
@@ -18,13 +18,12 @@ import { AppDataSource } from "./data-source";
 import { UserResolver } from "./resolvers/user";
 import { PostResolver } from "./resolvers/post";
 
-import { COOKIE_NAME, __prod__ } from "./constants";
+import { COOKIE_NAME, SESSION_SECRET, __prod__ } from "./constants";
 import { VoteResolver } from "./resolvers/vote";
 import { userLoader } from "./utils/loaders/UserLoader";
 import { postVoteLoader, commentVoteLoader } from "./utils/loaders/voteLoader";
 
 import { CommentResolver } from "./resolvers/comment";
-import { postLoader } from "./utils/loaders/PostLoader";
 import { CommunityResolver } from "./resolvers/community";
 import { communityLoader } from "./utils/loaders/communityLoader";
 
@@ -58,7 +57,7 @@ async function main() {
         httpOnly: true,
         secure: __prod__
       },
-      secret: "arhiuoe",
+      secret: SESSION_SECRET,
       resave: false
     })
   );
@@ -81,7 +80,6 @@ async function main() {
       userLoader,
       postVoteLoader,
       commentVoteLoader,
-      postLoader,
       communityLoader
     }),
     plugins: [

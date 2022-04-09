@@ -1,4 +1,4 @@
-import { Field, ID, Int, ObjectType } from "type-graphql";
+import { Field, Int, ObjectType } from "type-graphql";
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -16,7 +16,7 @@ import { Author, User } from "../user";
 
 @ObjectType()
 export class CommunityBase extends BaseEntity {
-  @Field(() => ID)
+  @Field(() => Int)
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -40,7 +40,7 @@ export class Community extends CommunityBase {
   @Column("text")
   rules: string;
 
-  @Field(() => ID)
+  @Field(() => Int)
   @Column()
   authorId: number;
 
@@ -48,7 +48,6 @@ export class Community extends CommunityBase {
   @ManyToOne(() => User, (user) => user.communities)
   author: User;
 
-  //TODO: automate this counters
   @Field(() => Int)
   @Column({ type: "int", default: 0 })
   totalPosts: number;
@@ -60,16 +59,11 @@ export class Community extends CommunityBase {
   @Field(() => Int, { nullable: true })
   subcriptionStatus: 1 | null;
 
-  //Maybe delete id (optional and not used)
   @RelationId((comm: Community) => comm.posts)
   postIds: number[];
 
   @OneToMany(() => Post, (post) => post.author)
   posts: Post[];
-
-  /**
-   * user
-   */
 
   @RelationId((comm: Community) => comm.followers)
   followerIds: number[];

@@ -3,7 +3,6 @@ import {
   Args,
   Ctx,
   FieldResolver,
-  ID,
   Int,
   Mutation,
   Query,
@@ -18,11 +17,12 @@ import {
   CommunityInput,
   CommunityUpdateArgs,
   getCommunitiesArgs,
-  PaginatedCommunities
+  PaginatedCommunities,
+  CommunitySortKeys
 } from "../entity/community";
 
 import { IsAuth } from "../utils/middleware/isAuth";
-import { CreateResponse, FieldError, MyContext } from "../types";
+import { CreateResponse, MyContext } from "../types";
 import { AppDataSource } from "../data-source";
 
 @Resolver(Community)
@@ -37,16 +37,15 @@ export class CommunityResolver implements ResolverInterface<Community> {
     const user = await userLoader.clear(uid).load(uid);
 
     const status = user.followingCommunityIds.includes(comm.id) ? 1 : null;
-
     return status;
   }
 
   @FieldResolver()
-  author(@Root() comm: Community, @Ctx() { userLoader }: MyContext) {
-    return userLoader.load(comm.authorId);
+  async author(@Root() comm: Community, @Ctx() { userLoader }: MyContext) {
+    return await userLoader.load(comm.authorId);
   }
 
-  @Query(() => Community)
+  @Query(() => Community, { nullable: true })
   async community(@Arg("name") name: string): Promise<Community> {
     const community = await Community.findOne({
       where: { name }
@@ -58,26 +57,38 @@ export class CommunityResolver implements ResolverInterface<Community> {
   async communities(
     @Args(() => getCommunitiesArgs) args: getCommunitiesArgs
   ): Promise<PaginatedCommunities> {
-    const { cursor, limit: userLimit } = args;
+    const { cursor, limit: userLimit, sortKey } = args;
 
     const limit = userLimit >= 1 && userLimit <= 50 ? userLimit : 10;
-    const cursorDate = new Date(parseInt(cursor));
-
     const limitPlusOne = limit + 1;
 
     const qb = AppDataSource.getRepository(Community)
       .createQueryBuilder("community")
       .select("community")
-      .orderBy("community.createdAt", "DESC")
-      .take(limitPlusOne);
+      .take(limitPlusOne)
+      .orderBy("community.createdAt", "DESC");
 
-    if (cursor) {
+    if (cursor && sortKey === CommunitySortKeys.CREATED_AT) {
+      const cursorDate = new Date(parseInt(cursor));
       qb.andWhere("community.createdAt < :cursor", { cursor: cursorDate });
+    }
+
+    if (sortKey === CommunitySortKeys.FOLLOWER_COUNT) {
+      qb.orderBy("community.", "DESC");
+      qb.andWhere("community.totalUsers < :cursor", {
+        cursor: +cursor || 999999
+      });
     }
 
     const communities = await qb.getMany();
     const hasNextPage = communities.length === limitPlusOne;
-    let endCursor = "";
+
+    const lastItem = communities[limit - 1];
+    let endCursor: string = lastItem?.createdAt.getTime().toString() || "";
+
+    if (sortKey === CommunitySortKeys.FOLLOWER_COUNT) {
+      endCursor = lastItem.totalUsers.toString();
+    }
     if (hasNextPage)
       endCursor = communities[limit - 1].createdAt.getTime() as any;
 
@@ -96,27 +107,24 @@ export class CommunityResolver implements ResolverInterface<Community> {
     @Args(() => CommunityInput) args: CommunityInput,
     @Ctx() { req }: MyContext
   ): Promise<CreateResponse> {
-    const { userId } = req.session;
+    const authorId = req.session.userId;
 
     try {
-      await Community.create({
-        authorId: userId,
-        ...args
-      }).save();
+      await Community.create({ authorId, ...args }).save();
     } catch (error) {
-      if (error.code === "23505")
-        return {
-          errors: [{ field: "name", message: "this name is already taken" }]
-        };
+      if (error.code !== "23505") throw error;
+      return {
+        errors: [{ field: "name", message: "this name is already taken" }]
+      };
     }
     return { created: true };
   }
 
   @Mutation(() => Boolean)
   async updateCommunity(
-    @Arg("communityId", () => ID) communityId: number,
+    @Arg("communityId", () => Int) communityId: number,
     @Args(() => CommunityUpdateArgs) args: CommunityUpdateArgs,
-    @Ctx() { req }: MyContext
+    @Ctx() { req, communityLoader }: MyContext
   ) {
     const uid = req.session.userId;
     if (!uid) return false;
@@ -124,7 +132,8 @@ export class CommunityResolver implements ResolverInterface<Community> {
     const comm = await Community.findOne({ where: { id: communityId } });
     if (uid !== comm.authorId) return false;
 
-    Community.update(communityId, args);
+    await Community.update(communityId, args);
+    communityLoader.clear(communityId);
     return true;
   }
 }

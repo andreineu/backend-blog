@@ -1,15 +1,18 @@
-import { ObjectType, Field, ArgsType } from "type-graphql";
+import { ObjectType, Field, ArgsType, registerEnumType } from "type-graphql";
 import { Community } from ".";
-import { pageInfo, PaginationArgs } from "../../types";
+import { PageInfo, PaginationArgs } from "../../types";
 
 @ArgsType()
 export class CommunityInput {
   @Field()
   name: string;
+
   @Field()
   summary: string;
+
   @Field()
   rules: string;
+
   @Field({ nullable: true })
   avatar?: string;
 }
@@ -18,8 +21,10 @@ export class CommunityInput {
 export class CommunityUpdateArgs {
   @Field({ nullable: true })
   summary?: string;
+
   @Field({ nullable: true })
   rules?: string;
+
   @Field({ nullable: true })
   avatar?: string;
 }
@@ -28,9 +33,22 @@ export class CommunityUpdateArgs {
 export class PaginatedCommunities {
   @Field(() => [Community])
   items: Community[];
-  @Field(() => pageInfo)
-  pageInfo: pageInfo;
+
+  @Field(() => PageInfo)
+  pageInfo: PageInfo;
 }
 
+export enum CommunitySortKeys {
+  FOLLOWER_COUNT = "followerCount",
+  CREATED_AT = "createdAt"
+}
+
+registerEnumType(CommunitySortKeys, {
+  name: "CommunitySortKeys"
+});
+
 @ArgsType()
-export class getCommunitiesArgs extends PaginationArgs {}
+export class getCommunitiesArgs extends PaginationArgs {
+  @Field(() => CommunitySortKeys, { nullable: true })
+  sortKey?: CommunitySortKeys;
+}

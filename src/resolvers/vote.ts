@@ -2,7 +2,6 @@ import {
   Arg,
   Ctx,
   Field,
-  ID,
   Int,
   Mutation,
   ObjectType,
@@ -29,47 +28,38 @@ export class VoteResolver {
   @UseMiddleware(IsAuth())
   async votePost(
     @Arg("value", () => Int) value: number,
-    @Arg("postId", () => ID) postId: number,
+    @Arg("postId", () => Int) postId: number,
     @Ctx() { req }: MyContext
   ): Promise<VoteResponse> {
     const { userId } = req.session;
-    const realVoteValue = value >= 1 ? 1 : -1;
+    const realValue = value >= 1 ? 1 : -1;
+
     const oldVote = await PostVote.findOne({
       where: { postId, userId }
     });
     const alreadyVoted = !!oldVote;
 
-    if (alreadyVoted) {
-      if (oldVote.value === realVoteValue) {
-        return {
-          voted: false,
-          message: `already ${realVoteValue === 1 ? "upvoted" : "downvoted"}`
-        };
-      }
+    if (oldVote?.value === realValue) {
+      return {
+        voted: false,
+        message: "already voted"
+      };
+    }
 
-      await PostVote.delete({
-        userId,
-        postId
-      });
-      await Post.update(postId, {
-        rating: () => `rating + ${realVoteValue}`
-      });
-      return { voted: false, message: "changed vote status to undefined" };
+    if (alreadyVoted) {
+      await PostVote.remove(oldVote);
+      return { voted: false, message: "removed vote" };
     }
 
     await PostVote.insert({
       userId,
       postId,
-      value: realVoteValue
+      value: realValue
     });
-    await Post.update(postId, {
-      rating: () => `rating + ${realVoteValue}`
-    });
+
     return {
       voted: true,
-      message: `changed vote status to ${
-        realVoteValue === 1 ? "upvoted" : "downvoted"
-      }`
+      message: realValue === 1 ? "upvoted" : "downvoted"
     };
   }
 
@@ -77,47 +67,37 @@ export class VoteResolver {
   @UseMiddleware(IsAuth())
   async voteComment(
     @Arg("value", () => Int) value: number,
-    @Arg("commentId", () => ID) commentId: number,
+    @Arg("commentId", () => Int) commentId: number,
     @Ctx() { req }: MyContext
   ): Promise<VoteResponse> {
     const { userId } = req.session;
-    const realVoteValue = value >= 1 ? 1 : -1;
+    const realValue = value >= 1 ? 1 : -1;
+
     const oldVote = await CommentVote.findOne({
       where: { commentId, userId }
     });
     const alreadyVoted = !!oldVote;
 
+    if (oldVote?.value === realValue) {
+      return {
+        voted: false,
+        message: "already voted"
+      };
+    }
     if (alreadyVoted) {
-      if (oldVote.value === realVoteValue) {
-        return {
-          voted: false,
-          message: `already ${realVoteValue === 1 ? "upvoted" : "downvoted"}`
-        };
-      }
-
-      await CommentVote.delete({
-        userId,
-        commentId
-      });
-      await Comment.update(commentId, {
-        rating: () => `rating + ${realVoteValue}`
-      });
-      return { voted: false, message: "changed vote status to undefined" };
+      await CommentVote.remove(oldVote);
+      return { voted: false, message: "removed vote" };
     }
 
     await CommentVote.insert({
       userId,
       commentId,
-      value: realVoteValue
+      value: realValue
     });
-    await Comment.update(commentId, {
-      rating: () => `rating + ${realVoteValue}`
-    });
+
     return {
       voted: true,
-      message: `changed vote status to ${
-        realVoteValue === 1 ? "upvoted" : "downvoted"
-      }`
+      message: realValue === 1 ? "upvoted" : "downvoted"
     };
   }
 }

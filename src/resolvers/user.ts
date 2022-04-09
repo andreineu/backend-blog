@@ -3,7 +3,6 @@ import {
   Args,
   Ctx,
   FieldResolver,
-  ID,
   Int,
   Mutation,
   Query,
@@ -12,7 +11,9 @@ import {
   UseMiddleware
 } from "type-graphql";
 import { COOKIE_NAME } from "../constants";
+
 import { Community } from "../entity/community";
+
 import {
   FollowAction,
   User,
@@ -23,7 +24,9 @@ import {
 } from "../entity/user";
 import { MyContext } from "../types";
 import { hashPassword, isPasswordValid } from "../utils/auth";
+
 import { IsAuth } from "../utils/middleware/isAuth";
+
 import {
   validateRegisterArgs,
   validateRegisterError
@@ -39,16 +42,17 @@ export class UserResolver {
   ) {
     const uid = req.session.userId;
     const userMe = await userLoader.clear(uid).load(uid);
-
     const status = userMe.followingUserIds.includes(user.id) ? 1 : null;
-
     return status;
   }
 
   @Query(() => User, { nullable: true })
   @UseMiddleware(IsAuth({ returnValue: null, throwError: false }))
   async me(@Ctx() { req }: MyContext): Promise<User> {
-    const user = await User.findOne({ where: { id: req.session.userId } });
+    const user = await User.findOne({
+      where: { id: req.session.userId }
+    });
+
     return user;
   }
 
@@ -139,7 +143,7 @@ export class UserResolver {
 
   @Mutation(() => Boolean)
   updateUser(
-    @Arg("userId", () => ID) userId: number,
+    @Arg("userId", () => Int) userId: number,
     @Args(() => UserUpdateArgs) args: UserUpdateArgs,
     @Ctx() { req }: MyContext
   ) {
@@ -153,46 +157,45 @@ export class UserResolver {
   @Mutation(() => Boolean)
   @UseMiddleware(IsAuth())
   async followCommunity(
-    @Arg("communityId", () => ID) communityId: number,
+    @Arg("communityId", () => Int) communityId: number,
+    @Arg("action", () => FollowAction) action: FollowAction,
     @Ctx() { req }: MyContext
   ) {
+    if (req.session.userId === communityId) return false;
+
     const user = await User.findOne({
       where: { id: req.session.userId },
       relations: { followingCommunities: true }
     });
 
-    const comm = await Community.findOne({
+    const community = await Community.findOne({
       where: {
         id: communityId
       }
     });
 
-    user.followingCommunities = [...(user.followingCommunities || []), comm];
-    user.save();
+    if (action === FollowAction.UNFOLLOW) {
+      const valid = user.followingCommunities.findIndex(
+        (c) => c.id === communityId
+      );
+      if (valid === -1) return false;
 
-    return true;
-  }
+      user.followingCommunities = user.followingCommunities.filter(
+        (c) => c.id !== communityId
+      );
+      user.save();
+      community.totalUsers--;
+      community.save();
 
-  @Mutation(() => Boolean)
-  @UseMiddleware(IsAuth())
-  async unfollowCommunity(
-    @Arg("communityId", () => ID) communityId: number,
-    @Ctx() { req }: MyContext
-  ) {
-    const user = await User.findOne({
-      where: { id: req.session.userId },
-      relations: { followingCommunities: true }
-    });
+      return true;
+    }
 
-    const commToUnfollow = await Community.findOne({
-      where: {
-        id: communityId
-      }
-    });
-
-    user.followingCommunities = user.followingCommunities.filter(
-      (c) => c.id !== commToUnfollow.id
-    );
+    user.followingCommunities = [
+      ...(user.followingCommunities || []),
+      community
+    ];
+    community.totalUsers++;
+    community.save();
     user.save();
 
     return true;
@@ -201,79 +204,38 @@ export class UserResolver {
   @Mutation(() => Boolean)
   @UseMiddleware(IsAuth())
   async followUser(
-    @Arg("userId", () => ID) userId: number,
-    @Ctx() { req }: MyContext
-  ) {
-    const user = await User.findOne({
-      where: { id: req.session.userId },
-      relations: { followingUsers: true }
-    });
-
-    const userToFollow = await User.findOne({
-      where: {
-        id: userId
-      }
-    });
-
-    user.followingUsers = [...(user.followingUsers || []), userToFollow];
-    user.save();
-
-    return true;
-  }
-
-  @Mutation(() => Boolean)
-  @UseMiddleware(IsAuth())
-  async unfollowUser(
-    @Arg("userId", () => ID) userId: number,
-    @Ctx() { req }: MyContext
-  ) {
-    const user = await User.findOne({
-      where: { id: req.session.userId },
-      relations: { followingUsers: true }
-    });
-
-    const userToUnfollow = await User.findOne({
-      where: {
-        id: userId
-      }
-    });
-
-    user.followingUsers = user.followingUsers.filter(
-      (u) => u.id !== userToUnfollow.id
-    );
-
-    await user.save();
-
-    return true;
-  }
-
-  @Mutation(() => Boolean)
-  @UseMiddleware(IsAuth())
-  async _followUser(
-    @Arg("userId", () => ID) userId: string,
+    @Arg("userId", () => Int) userId: number,
     @Arg("action", () => FollowAction) action: FollowAction,
     @Ctx() { req }: MyContext
   ) {
+    if (req.session.userId === userId) return false;
+
     const user = await User.findOne({
       where: { id: req.session.userId },
       relations: { followingUsers: true }
     });
-    console.log(user);
+
+    const creator = await User.findOne({
+      where: {
+        id: userId
+      }
+    });
+
     if (action === FollowAction.UNFOLLOW) {
-      user.followingUsers = user.followingUsers.filter(
-        (u) => u.id !== parseInt(userId)
-      );
+      const valid = user.followingUsers.findIndex((u) => u.id === userId);
+      if (valid === -1) return false;
+
+      user.followingUsers = user.followingUsers.filter((u) => u.id !== userId);
       user.save();
+      creator.totalFollowers--;
+      creator.save();
       return true;
     }
 
-    const userToFollow = await User.findOne({
-      where: {
-        id: +userId
-      }
-    });
-    user.followingUsers = [...(user.followingUsers || []), userToFollow];
+    user.followingUsers = [...(user.followingUsers || []), creator];
     await user.save();
+    creator.totalFollowers++;
+    creator.save();
     return true;
   }
 }
