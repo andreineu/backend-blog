@@ -15,3 +15,4 @@ export const db_password = process.env.DB_PASSWORD;
 export const db_database = process.env.DB_DATABASE;
 export const port = parseInt(process.env.PORT);
 export const cors_origin = process.env.CORS_ORIGIN;
+export const db_url = process.env.DATABASE_URL;

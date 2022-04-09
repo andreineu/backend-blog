@@ -1,13 +1,7 @@
 import "reflect-metadata";
 import { DataSource } from "typeorm";
 
-import {
-  db_database,
-  db_host,
-  db_password,
-  db_port,
-  db_username
-} from "./constants";
+import { db_url } from "./constants";
 
 import { Comment } from "./entity/comment";
 import { Community } from "./entity/community";
@@ -24,11 +18,7 @@ import {
 
 export const AppDataSource = new DataSource({
   type: "postgres",
-  host: db_host,
-  port: db_port,
-  username: db_username,
-  password: db_password,
-  database: db_database,
+  url: db_url,
   synchronize: true,
   logging: false,
   entities: [User, Post, PostVote, CommentVote, Comment, Community],
