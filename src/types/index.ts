@@ -9,7 +9,7 @@ import {
 } from "type-graphql";
 import { communityLoader } from "../utils/loaders/communityLoader";
 
-import { userLoader } from "../utils/loaders/UserLoader";
+import { userLoader } from "../utils/loaders/userLoader";
 import { postVoteLoader, commentVoteLoader } from "../utils/loaders/voteLoader";
 
 export type MyContext = {

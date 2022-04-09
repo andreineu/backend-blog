@@ -26,7 +26,7 @@ import {
   __prod__
 } from "./constants";
 import { VoteResolver } from "./resolvers/vote";
-import { userLoader } from "./utils/loaders/UserLoader";
+import { userLoader } from "./utils/loaders/userLoader";
 import { postVoteLoader, commentVoteLoader } from "./utils/loaders/voteLoader";
 
 import { CommentResolver } from "./resolvers/comment";

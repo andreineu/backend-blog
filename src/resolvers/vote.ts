@@ -8,8 +8,7 @@ import {
   Resolver,
   UseMiddleware
 } from "type-graphql";
-import { Comment } from "../entity/comment";
-import { Post } from "../entity/post";
+
 import { CommentVote, PostVote } from "../entity/vote";
 import { IsAuth } from "../utils/middleware/isAuth";
 import { MyContext } from "../types";

@@ -39,11 +39,10 @@ export class User extends BaseEntity {
   avatar: string | null;
 
   /**
-   * counters.   *
-   * post counter chnages via post subscriber.
-   * follower counter changes in resolver mutation only
-   * TODO:
-   * rating counter changes via vote subscriber
+   * counters:
+   * post counter updates via post subscriber.
+   * follower counter updates in resolver mutation only.
+   * rating counter updates via vote subscriber.
    */
   @Field(() => Int)
   @Column({ type: "int", default: 0 })

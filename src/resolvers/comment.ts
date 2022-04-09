@@ -15,7 +15,6 @@ import { Comment } from "../entity/comment";
 
 import { IsAuth } from "../utils/middleware/isAuth";
 import { MyContext } from "../types";
-import { Post } from "../entity/post";
 
 @Resolver(Comment)
 export class CommentResolver implements ResolverInterface<Comment> {
