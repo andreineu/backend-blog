@@ -26,7 +26,7 @@ export class PostVoteSubscriber implements EntitySubscriberInterface<PostVote> {
     post.author.save();
     post.save();
   }
-  async beforeRemove(event: RemoveEvent<PostVote>): Promise<any> {
+  async beforeRemove(event: RemoveEvent<PostVote>) {
     const post = await event.manager.findOne(Post, {
       where: { id: event.entity.postId },
       relations: { author: true }
@@ -55,11 +55,11 @@ export class CommentVoteSubscriber
 
     comment.author.rating += event.entity.value;
     comment.rating += event.entity.value;
-    comment.author.save();
-    comment.save();
+    await comment.author.save();
+    await comment.save();
   }
 
-  async beforeRemove(event: RemoveEvent<CommentVote>): Promise<any> {
+  async beforeRemove(event: RemoveEvent<CommentVote>) {
     const comment = await event.manager.findOne(Comment, {
       where: { id: event.entity.commentId },
       relations: { author: true }
@@ -67,7 +67,7 @@ export class CommentVoteSubscriber
 
     comment.author.rating -= event.entity.value;
     comment.rating -= event.entity.value;
-    comment.author.save();
-    comment.save();
+    await comment.author.save();
+    await comment.save();
   }
 }
