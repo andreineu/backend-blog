@@ -62,10 +62,10 @@ async function main() {
       saveUninitialized: false,
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 7, // 7days
-        httpOnly: true,
+        httpOnly: true
         // domain: __prod__ ? ".andreineu.online" : undefined,
-        secure: __prod__,
-        sameSite: __prod__ ? "none" : undefined
+        // secure: __prod__
+        // sameSite: __prod__ ? "none " : undefined
       },
       secret: SESSION_SECRET,
       resave: false
