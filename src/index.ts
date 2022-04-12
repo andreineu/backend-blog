@@ -63,8 +63,8 @@ async function main() {
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 7, // 7days
         httpOnly: true,
-        domain: __prod__ ? ".herokuapp.com" : undefined,
-        secure: __prod__
+        secure: __prod__,
+        sameSite: "lax"
         // sameSite: __prod__ ? "none " : undefined
       },
       secret: SESSION_SECRET,
