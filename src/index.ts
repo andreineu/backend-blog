@@ -10,9 +10,8 @@ import {
 
 import cors from "cors";
 
-import { createClient, RedisClient } from "redis";
 import session from "express-session";
-import connectRedis from "connect-redis";
+import { TypeormStore } from "typeorm-store";
 
 import { AppDataSource } from "./data-source";
 import { UserResolver } from "./resolvers/user";
@@ -22,9 +21,6 @@ import {
   COOKIE_NAME,
   cors_origin,
   port,
-  redis_host,
-  redis_password,
-  redis_port,
   SESSION_SECRET,
   __prod__
 } from "./constants";
@@ -35,6 +31,7 @@ import { postVoteLoader, commentVoteLoader } from "./utils/loaders/voteLoader";
 import { CommentResolver } from "./resolvers/comment";
 import { CommunityResolver } from "./resolvers/community";
 import { communityLoader } from "./utils/loaders/communityLoader";
+import { Session } from "./entity/session";
 
 async function main() {
   await AppDataSource.initialize()
@@ -53,16 +50,13 @@ async function main() {
     })
   );
 
-  const redisClient = createClient(
-    `rediss://:${redis_password}@${redis_host}:${redis_password}`
-  );
-
-  const RedisStore = connectRedis(session);
+  const sessionRepository = Session.getRepository();
+  const sessionStore = new TypeormStore({ repository: sessionRepository });
 
   app.use(
     session({
       name: COOKIE_NAME,
-      store: new RedisStore({ client: redisClient, disableTouch: true }),
+      store: sessionStore,
       saveUninitialized: false,
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 7, // 7days

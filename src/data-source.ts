@@ -6,6 +6,7 @@ import { db_url } from "./constants";
 import { Comment } from "./entity/comment";
 import { Community } from "./entity/community";
 import { Post } from "./entity/post";
+import { Session } from "./entity/session";
 import { User } from "./entity/user";
 import { CommentVote, PostVote } from "./entity/vote";
 
@@ -21,7 +22,7 @@ export const AppDataSource = new DataSource({
   url: db_url,
   synchronize: true,
   logging: false,
-  entities: [User, Post, PostVote, CommentVote, Comment, Community],
+  entities: [User, Post, PostVote, CommentVote, Comment, Community, Session],
   migrations: ["./migrations/*.ts"],
   ssl: { rejectUnauthorized: false },
   subscribers: [
