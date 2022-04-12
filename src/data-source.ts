@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import { DataSource } from "typeorm";
 
-import { db_url } from "./constants";
+import { db_url, __prod__ } from "./constants";
 
 import { Comment } from "./entity/comment";
 import { Community } from "./entity/community";
