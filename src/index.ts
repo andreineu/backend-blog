@@ -10,7 +10,7 @@ import {
 
 import cors from "cors";
 
-import { createClient } from "redis";
+import { createClient, RedisClient } from "redis";
 import session from "express-session";
 import connectRedis from "connect-redis";
 
@@ -53,11 +53,10 @@ async function main() {
     })
   );
 
-  const redisClient = createClient({
-    host: redis_host,
-    port: parseInt(redis_port),
-    password: redis_password
-  });
+  const redisClient = createClient(
+    `rediss://:${redis_password}@${redis_host}:${redis_password}`
+  );
+
   const RedisStore = connectRedis(session);
 
   app.use(
