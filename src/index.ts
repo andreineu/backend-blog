@@ -63,7 +63,7 @@ async function main() {
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 7, // 7days
         httpOnly: true,
-        domain: __prod__ ? ".andreineu.online" : undefined,
+        // domain: __prod__ ? ".andreineu.online" : undefined,
         secure: __prod__,
         sameSite: __prod__ ? "none" : undefined
       },
