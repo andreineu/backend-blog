@@ -22,6 +22,9 @@ import {
   COOKIE_NAME,
   cors_origin,
   port,
+  redis_host,
+  redis_password,
+  redis_port,
   SESSION_SECRET,
   __prod__
 } from "./constants";
@@ -50,7 +53,11 @@ async function main() {
     })
   );
 
-  const redisClient = createClient();
+  const redisClient = createClient({
+    host: redis_host,
+    port: parseInt(redis_port),
+    password: redis_password
+  });
   const RedisStore = connectRedis(session);
 
   app.use(
