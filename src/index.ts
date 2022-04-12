@@ -48,7 +48,7 @@ async function main() {
 
   app.use(
     cors({
-      origin: cors_origin,
+      origin: "*",
       credentials: true
     })
   );
