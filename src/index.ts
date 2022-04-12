@@ -62,7 +62,7 @@ async function main() {
       saveUninitialized: false,
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 7, // 7days
-        httpOnly: true,
+        httpOnly: false,
         secure: __prod__,
         // sameSite: "lax"
         sameSite: "none"
