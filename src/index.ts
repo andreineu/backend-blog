@@ -11,7 +11,8 @@ import {
 import cors from "cors";
 
 import session from "express-session";
-import { TypeormStore } from "typeorm-store";
+
+import connectRedis from "connect-redis";
 
 import { AppDataSource } from "./data-source";
 import { UserResolver } from "./resolvers/user";
@@ -21,6 +22,7 @@ import {
   COOKIE_NAME,
   cors_origin,
   port,
+  redis_url,
   SESSION_SECRET,
   __prod__
 } from "./constants";
@@ -31,7 +33,8 @@ import { postVoteLoader, commentVoteLoader } from "./utils/loaders/voteLoader";
 import { CommentResolver } from "./resolvers/comment";
 import { CommunityResolver } from "./resolvers/community";
 import { communityLoader } from "./utils/loaders/communityLoader";
-import { Session } from "./entity/session";
+;
+import Redis from "ioredis"
 
 async function main() {
   await AppDataSource.initialize()
@@ -52,28 +55,27 @@ async function main() {
     })
   );
 
-  const sessionRepository = Session.getRepository();
-  const sessionStore = new TypeormStore({ repository: sessionRepository });
+  const RedisStore = connectRedis(session)
+  const redisClient = new Redis(redis_url)
 
   app.use(
     session({
       name: COOKIE_NAME,
-      store: sessionStore,
+      store: new RedisStore({ client: redisClient, disableTTL: true }),
       saveUninitialized: false,
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 7, // 7days
         httpOnly: false,
         secure: __prod__,
-        // sameSite: "lax"
-        sameSite: "none"
-        // sameSite: __prod__ ? "none " : undefined
+        domain: __prod__ ? ".andreineu.ru" : undefined,
+        sameSite: "lax"
       },
       secret: SESSION_SECRET,
       resave: false
     })
   );
 
-  app.get("/", (_req, res) => res.send("hello"));
+  app.get("/", (_req, res) => res.send("working 👍"));
 
   const apolloServer = new ApolloServer({
     schema: await buildSchema({

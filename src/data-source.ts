@@ -6,7 +6,7 @@ import { db_url, __prod__ } from "./constants";
 import { Comment } from "./entity/comment";
 import { Community } from "./entity/community";
 import { Post } from "./entity/post";
-import { Session } from "./entity/session";
+
 import { User } from "./entity/user";
 import { CommentVote, PostVote } from "./entity/vote";
 
@@ -20,16 +20,14 @@ import {
 export const AppDataSource = new DataSource({
   type: "postgres",
   url: db_url,
-  synchronize: true,
-  logging: false,
-  entities: [User, Post, PostVote, CommentVote, Comment, Community, Session],
+  synchronize: false,
+  logging: true,
+  entities: [User, Post, PostVote, CommentVote, Comment, Community],
   migrations: ["./migrations/*.ts"],
-  ssl: { rejectUnauthorized: false },
   subscribers: [
     PostSubscriber,
     PostVoteSubscriber,
     CommentSubscriber,
     CommentVoteSubscriber
   ]
-  // logger: "advanced-console"
 });
