@@ -14,20 +14,15 @@ export class CommentSubscriber implements EntitySubscriberInterface<Comment> {
   }
 
   async afterInsert(event: InsertEvent<Comment>) {
-    await event.manager.increment(
-      Post,
-      event.entity.postId,
-      "totalComments",
-      1
-    );
+    const post = await event.manager.findOne(Post, { where: { id: event.entity.postId } })
+    post.totalComments++
+    post.save()
   }
 
   async afterRemove(event: RemoveEvent<Comment>) {
-    await event.manager.decrement(
-      Post,
-      event.entity.postId,
-      "totalComments",
-      1
-    );
+    const post = await event.manager.findOne(Post, { where: { id: event.entity.postId } })
+    post.totalComments--
+    post.save()
+
   }
 }
