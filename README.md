@@ -1,6 +1,24 @@
 # Backend
 
-Steps to run this project:
+# [click here to check preview of application](https://andreineu.ru)
+
+### [click here to check frontend](https://github.com/andreineu/blog-client)
+
+# used stack
+
+#### core:
+- node
+- express
+- apollo-server-express
+- type-graphql
+- typeorm
+- dataloder
+
+#### session: 
+- express-session
+- redis
+
+## Steps to run this project:
 
 1. Run `npm i` command
 2. Setup env variables
@@ -9,10 +27,7 @@ Steps to run this project:
 Env variables
 
 - SESSION_SECRET
-- DB_HOST
-- DB_PORT
-- DB_USERNAME
-- DB_PASSWORD
-- DB_DATABASE
+- DATABASE_URL
+- REDIS_URL
 - PORT
 - CORS_ORIGIN
