@@ -19,12 +19,10 @@ export class PostSubscriber implements EntitySubscriberInterface<Post> {
 
     if (!event.entity.communityId) return;
 
-    await event.manager.increment(
-      Community,
-      event.entity.communityId,
-      "totalPosts",
-      1
-    );
+    const community = await event.manager.findOne(Community, { where: { id: event.entity.communityId } })
+    community.totalPosts++
+    community.save()
+
   }
 
   async afterRemove(event: RemoveEvent<Post>) {
@@ -32,11 +30,8 @@ export class PostSubscriber implements EntitySubscriberInterface<Post> {
 
     if (!event.entity.communityId) return;
 
-    await event.manager.decrement(
-      Community,
-      event.entity.communityId,
-      "totalPosts",
-      1
-    );
+    const community = await event.manager.findOne(Community, { where: { id: event.entity.communityId } })
+    community.totalPosts--
+    community.save()
   }
 }

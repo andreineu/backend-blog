@@ -1,11 +1,12 @@
 import "reflect-metadata";
 import { DataSource } from "typeorm";
 
-import { db_url } from "./constants";
+import { db_url, __prod__ } from "./constants";
 
 import { Comment } from "./entity/comment";
 import { Community } from "./entity/community";
 import { Post } from "./entity/post";
+
 import { User } from "./entity/user";
 import { CommentVote, PostVote } from "./entity/vote";
 
@@ -24,5 +25,4 @@ export const AppDataSource = new DataSource({
     CommentSubscriber,
 
   ]
-  // logger: "advanced-console"
 });

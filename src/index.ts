@@ -2,9 +2,11 @@ import "reflect-metadata";
 import { ApolloServer } from "apollo-server-express";
 import express from "express";
 import cors from "cors";
-import { createClient } from "redis";
 import session from "express-session";
+
 import connectRedis from "connect-redis";
+
+import Redis from "ioredis"
 
 import { AppDataSource } from "./data-source";
 
@@ -12,6 +14,7 @@ import {
   COOKIE_NAME,
   cors_origin,
   port,
+  redis_url,
   SESSION_SECRET,
   __prod__
 } from "./constants";
@@ -29,6 +32,8 @@ async function main() {
 
   const app = express();
 
+  app.set("trust proxy", 1);
+
   app.use(
     cors({
       origin: cors_origin,
@@ -36,25 +41,27 @@ async function main() {
     })
   );
 
-  const redisClient = createClient();
-  const RedisStore = connectRedis(session);
+  const RedisStore = connectRedis(session)
+  const redisClient = new Redis(redis_url)
 
   app.use(
     session({
       name: COOKIE_NAME,
-      store: new RedisStore({ client: redisClient, disableTouch: true }),
+      store: new RedisStore({ client: redisClient, disableTTL: true }),
       saveUninitialized: false,
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 7, // 7days
-        httpOnly: true,
-        secure: __prod__
+        httpOnly: false,
+        secure: __prod__,
+        domain: __prod__ ? ".andreineu.ru" : undefined,
+        sameSite: "lax"
       },
       secret: SESSION_SECRET,
       resave: false
     })
   );
 
-  app.get("/", (_req, res) => res.send("hello"));
+  app.get("/", (_req, res) => res.send("working 👍"));
 
   const apolloConfig = await createApolloConfig()
 
