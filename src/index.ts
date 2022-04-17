@@ -1,22 +1,12 @@
 import "reflect-metadata";
-
 import { ApolloServer } from "apollo-server-express";
 import express from "express";
-import { buildSchema } from "type-graphql";
-import {
-  ApolloServerPluginLandingPageGraphQLPlayground,
-  ApolloServerPluginLandingPageDisabled
-} from "apollo-server-core";
-
 import cors from "cors";
-
 import { createClient } from "redis";
 import session from "express-session";
 import connectRedis from "connect-redis";
 
 import { AppDataSource } from "./data-source";
-import { UserResolver } from "./resolvers/user";
-import { PostResolver } from "./resolvers/post";
 
 import {
   COOKIE_NAME,
@@ -25,13 +15,8 @@ import {
   SESSION_SECRET,
   __prod__
 } from "./constants";
-import { VoteResolver } from "./resolvers/vote";
-import { userLoader } from "./utils/loaders/userLoader";
-import { postVoteLoader, commentVoteLoader } from "./utils/loaders/voteLoader";
 
-import { CommentResolver } from "./resolvers/comment";
-import { CommunityResolver } from "./resolvers/community";
-import { communityLoader } from "./utils/loaders/communityLoader";
+import { createApolloConfig } from "./apollo";
 
 async function main() {
   await AppDataSource.initialize()
@@ -41,6 +26,7 @@ async function main() {
     .catch((err) => {
       console.error("Error during Data Source initialization:", err);
     });
+
   const app = express();
 
   app.use(
@@ -70,29 +56,9 @@ async function main() {
 
   app.get("/", (_req, res) => res.send("hello"));
 
-  const apolloServer = new ApolloServer({
-    schema: await buildSchema({
-      resolvers: [
-        UserResolver,
-        PostResolver,
-        VoteResolver,
-        CommentResolver,
-        CommunityResolver
-      ]
-    }),
-    context: ({ req, res }) => ({
-      req,
-      res,
-      userLoader,
-      postVoteLoader,
-      commentVoteLoader,
-      communityLoader
-    }),
-    plugins: [
-      ApolloServerPluginLandingPageGraphQLPlayground({}),
-      ApolloServerPluginLandingPageDisabled()
-    ]
-  });
+  const apolloConfig = await createApolloConfig()
+
+  const apolloServer = new ApolloServer(apolloConfig);
 
   await apolloServer.start();
 

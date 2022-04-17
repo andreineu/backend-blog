@@ -12,6 +12,8 @@ import {
 import { CommentVote, PostVote } from "../entity/vote";
 import { IsAuth } from "../utils/middleware/isAuth";
 import { MyContext } from "../types";
+import { AppDataSource } from "../data-source";
+import { Post } from "../entity/post";
 
 @ObjectType()
 class VoteResponse {
@@ -46,15 +48,50 @@ export class VoteResolver {
     }
 
     if (alreadyVoted) {
-      await PostVote.remove(oldVote);
-      return { voted: false, message: "removed vote" };
+
+      AppDataSource.transaction(async (entityManager) => {
+        try {
+          await entityManager.delete(PostVote, {
+            userId,
+            postId,
+          })
+          const post = await entityManager.findOne(Post, {
+            where: { id: postId },
+            relations: { author: true }
+          });
+
+
+          post.author.rating -= realValue;
+          post.rating -= realValue;
+          post.author.save();
+          post.save();
+
+          return { voted: false, message: "removed vote" };
+        } catch (error) {
+          return { voted: false, message: "database error" };
+
+        }
+      })
+      // await PostVote.remove(oldVote);
     }
 
-    await PostVote.insert({
-      userId,
-      postId,
-      value: realValue
-    });
+    AppDataSource.transaction(async (entityManager) => {
+      await entityManager.insert(PostVote, {
+        userId,
+        postId,
+        value: realValue
+      })
+      const post = await entityManager.findOne(Post, {
+        where: { id: postId },
+        relations: { author: true }
+      });
+
+      post.author.rating += realValue;
+      post.rating += realValue;
+      post.author.save();
+      post.save();
+
+    })
 
     return {
       voted: true,
