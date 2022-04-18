@@ -5,8 +5,8 @@ import {
   Int,
   registerEnumType
 } from "type-graphql";
-import { User } from ".";
-import { FieldError } from "../../types";
+import { User } from "./user.entity";
+import { FieldError } from "src/types";
 
 @ObjectType()
 export class Author {

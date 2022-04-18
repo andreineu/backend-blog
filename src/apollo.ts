@@ -1,20 +1,20 @@
 import { ApolloServerExpressConfig } from "apollo-server-express";
 import { buildSchema, NonEmptyArray } from "type-graphql";
 
-import { CommentResolver } from "./resolvers/comment.resolver";
-import { CommunityResolver } from "./resolvers/community.resolver";
-import { PostResolver } from "./resolvers/post.resolver";
-import { UserResolver } from "./resolvers/user.resolver";
-import { VoteResolver } from "./resolvers/vote.resolver";
-
-import { communityLoader } from "./utils/loaders/communityLoader";
-import { userLoader } from "./utils/loaders/userLoader";
-import { postVoteLoader, commentVoteLoader } from "./utils/loaders/voteLoader";
+import { CommentResolver } from "./models/comment/comment.resolver";
+import { CommunityResolver } from "./models/community/community.resolver";
+import { PostResolver } from "./models/post/post.resolver";
+import { UserResolver } from "./models/user/user.resolver";
+import { VoteResolver } from "./models/vote/vote.resolver";
 
 import {
   ApolloServerPluginLandingPageGraphQLPlayground,
   ApolloServerPluginLandingPageDisabled
 } from "apollo-server-core";
+
+import { Container } from "typedi"
+
+import { createLoaders } from "./utils/loaders";
 
 export const resolvers: NonEmptyArray<Function> | NonEmptyArray<string> = [
   UserResolver,
@@ -25,14 +25,11 @@ export const resolvers: NonEmptyArray<Function> | NonEmptyArray<string> = [
 ]
 
 export const createApolloConfig = async (): Promise<ApolloServerExpressConfig> => ({
-  schema: await buildSchema({ resolvers }),
+  schema: await buildSchema({ resolvers, container: Container }),
   context: ({ req, res }) => ({
     req,
     res,
-    userLoader,
-    postVoteLoader,
-    commentVoteLoader,
-    communityLoader
+    loaders: createLoaders()
   }),
   plugins: [
     ApolloServerPluginLandingPageGraphQLPlayground({}),

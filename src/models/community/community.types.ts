@@ -1,6 +1,6 @@
 import { ObjectType, Field, ArgsType, registerEnumType } from "type-graphql";
-import { Community } from ".";
-import { PageInfo, PaginationArgs } from "../../types";
+import { Community } from "./community.entity";
+import { PageInfo, PaginationArgs } from "src/types";
 
 @ArgsType()
 export class CommunityInput {

@@ -4,8 +4,8 @@ import {
   InsertEvent,
   RemoveEvent
 } from "typeorm";
-import { Comment } from "../entity/comment";
-import { Post } from "../entity/post";
+import { Comment } from "../models/comment/comment.entity";
+import { Post } from "../models/post/post.entity";
 
 @EventSubscriber()
 export class CommentSubscriber implements EntitySubscriberInterface<Comment> {
@@ -14,15 +14,18 @@ export class CommentSubscriber implements EntitySubscriberInterface<Comment> {
   }
 
   async afterInsert(event: InsertEvent<Comment>) {
-    const post = await event.manager.findOne(Post, { where: { id: event.entity.postId } })
-    post.totalComments++
-    post.save()
+    const post = await event.manager.findOne(Post, {
+      where: { id: event.entity.postId }
+    });
+    post.totalComments++;
+    await event.manager.save(post);
   }
 
   async afterRemove(event: RemoveEvent<Comment>) {
-    const post = await event.manager.findOne(Post, { where: { id: event.entity.postId } })
-    post.totalComments--
-    post.save()
-
+    const post = await event.manager.findOne(Post, {
+      where: { id: event.entity.postId }
+    });
+    post.totalComments--;
+    await event.manager.save(post);
   }
 }
