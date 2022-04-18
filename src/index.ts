@@ -8,7 +8,7 @@ import connectRedis from "connect-redis";
 
 import Redis from "ioredis"
 
-import { AppDataSource } from "./data-source";
+import { AppDataSource, initializeConnection } from "./data-source";
 
 import {
   COOKIE_NAME,
@@ -22,13 +22,7 @@ import {
 import { createApolloConfig } from "./apollo";
 
 async function main() {
-  await AppDataSource.initialize()
-    .then(() => {
-      console.log("Data Source has been initialized!");
-    })
-    .catch((err) => {
-      console.error("Error during Data Source initialization:", err);
-    });
+  await initializeConnection()
 
   const app = express();
 

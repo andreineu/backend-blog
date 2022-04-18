@@ -1,15 +1,29 @@
 import { MiddlewareFn } from "type-graphql";
-import { MyContext } from "../../types";
+import { MyContext } from "src/types";
 
 interface authMwOptions {
+  /**
+   * what value should return if not authenticated.
+   * if specified won't throw error
+   */
   returnValue?: any;
+
+  /**
+   * if should throw error.
+   * by default set to true
+   */
   throwError?: boolean;
+
+  /**
+   * what error message should throw.
+   * by default throws `not authenticated`
+   */
   errorMessage?: string;
 }
+
 export const IsAuth = (
   options: authMwOptions = {
     errorMessage: "not authenticated",
-    returnValue: undefined,
     throwError: true
   }
 ) => {
@@ -17,7 +31,9 @@ export const IsAuth = (
     const valid = !!context?.req?.session?.userId;
     if (valid) return next();
 
-    if (options.throwError === false) return options.returnValue;
+    const { errorMessage, returnValue, throwError } = options
+
+    if (throwError === false || typeof returnValue !== 'undefined') return options.returnValue;
 
     throw new Error(options.errorMessage);
   };

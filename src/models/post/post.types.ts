@@ -1,14 +1,6 @@
-import {
-  ObjectType,
-  Field,
-  InputType,
-  Int,
-  registerEnumType,
-  ArgsType,
-  ID
-} from "type-graphql";
-import { Post } from ".";
-import { PageInfo, PaginationArgs, SortKeys } from "../../types";
+import { ObjectType, Field, Int, ArgsType } from "type-graphql";
+import { Post } from "./post.entity";
+import { PageInfo, PaginationArgs, SortKeys } from "src/types";
 
 @ObjectType()
 export class PaginatedPosts {

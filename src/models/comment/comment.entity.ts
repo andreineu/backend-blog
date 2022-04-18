@@ -1,22 +1,22 @@
 import { ObjectType, Field, Int } from "type-graphql";
 import {
   Entity,
-  BaseEntity,
   PrimaryGeneratedColumn,
   Column,
   ManyToOne,
   UpdateDateColumn,
   CreateDateColumn,
-  OneToMany,
-  AfterInsert
+  OneToMany
 } from "typeorm";
-import { Author, User } from "../user";
-import { Post } from "../post";
-import { CommentVote } from "../vote";
+
+import { User } from "../user/user.entity";
+import { Author } from "../user/user.types";
+import { Post } from "../post/post.entity";
+import { CommentVote } from "../vote/vote.entity";
 
 @ObjectType()
 @Entity()
-export class Comment extends BaseEntity {
+export class Comment {
   @Field(() => Int)
   @PrimaryGeneratedColumn()
   id: number;

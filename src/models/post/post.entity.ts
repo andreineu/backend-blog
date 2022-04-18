@@ -6,18 +6,20 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
-  BaseEntity,
   OneToMany,
   RelationId
 } from "typeorm";
-import { Author, User } from "../user";
-import { PostVote } from "../vote";
-import { Comment } from "../comment";
-import { Community, CommunityBase } from "../community";
+
+import { User } from "../user/user.entity";
+import { PostVote } from "../vote/vote.entity";
+import { Comment } from "../comment/comment.entity";
+import { Community, CommunityBase } from "../community/community.entity";
+
+import { Author } from "../user/user.types";
 
 @ObjectType()
 @Entity()
-export class Post extends BaseEntity {
+export class Post {
   @Field(() => Int)
   @PrimaryGeneratedColumn()
   id: number;

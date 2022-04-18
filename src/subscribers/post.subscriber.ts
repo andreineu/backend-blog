@@ -4,9 +4,9 @@ import {
   InsertEvent,
   RemoveEvent
 } from "typeorm";
-import { Community } from "../entity/community";
-import { Post } from "../entity/post";
-import { User } from "../entity/user";
+import { Community } from "../models/community/community.entity";
+import { Post } from "../models/post/post.entity";
+import { User } from "../models/user/user.entity";
 
 @EventSubscriber()
 export class PostSubscriber implements EntitySubscriberInterface<Post> {
@@ -19,10 +19,11 @@ export class PostSubscriber implements EntitySubscriberInterface<Post> {
 
     if (!event.entity.communityId) return;
 
-    const community = await event.manager.findOne(Community, { where: { id: event.entity.communityId } })
-    community.totalPosts++
-    community.save()
-
+    const community = await event.manager.findOne(Community, {
+      where: { id: event.entity.communityId }
+    });
+    community.totalPosts++;
+    await event.manager.save(community);
   }
 
   async afterRemove(event: RemoveEvent<Post>) {
@@ -30,8 +31,10 @@ export class PostSubscriber implements EntitySubscriberInterface<Post> {
 
     if (!event.entity.communityId) return;
 
-    const community = await event.manager.findOne(Community, { where: { id: event.entity.communityId } })
-    community.totalPosts--
-    community.save()
+    const community = await event.manager.findOne(Community, {
+      where: { id: event.entity.communityId }
+    });
+    community.totalPosts--;
+    await event.manager.save(community);
   }
 }

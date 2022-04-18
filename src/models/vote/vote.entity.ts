@@ -1,20 +1,13 @@
-import { Field, Int, ObjectType } from "type-graphql";
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  BaseEntity,
-  ManyToOne,
-  PrimaryColumn
-} from "typeorm";
-import { Post } from "../post";
-import { User } from "../user";
+import { ObjectType } from "type-graphql";
+import { Entity, Column, ManyToOne, PrimaryColumn } from "typeorm";
 
-import { Comment } from "../comment";
+import { Post } from "../post/post.entity";
+import { User } from "../user/user.entity";
+import { Comment } from "../comment/comment.entity";
 
 @ObjectType()
 @Entity()
-class BaseVote extends BaseEntity {
+class BaseVote {
   @Column()
   value: 1 | -1;
 }

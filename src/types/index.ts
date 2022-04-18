@@ -7,21 +7,15 @@ import {
   ArgsType,
   Int
 } from "type-graphql";
-import { communityLoader } from "../utils/loaders/communityLoader";
-
-import { userLoader } from "../utils/loaders/userLoader";
-import { postVoteLoader, commentVoteLoader } from "../utils/loaders/voteLoader";
+import { createLoaders } from "../utils/loaders";
 
 export type MyContext = {
   req: Request & {
     session: Session & Partial<SessionData> & { userId: number };
   };
   res: Response;
-  userLoader: typeof userLoader;
 
-  postVoteLoader: typeof postVoteLoader;
-  commentVoteLoader: typeof commentVoteLoader;
-  communityLoader: typeof communityLoader;
+  loaders: ReturnType<typeof createLoaders>;
 };
 
 @ObjectType()

@@ -4,18 +4,18 @@ import {
   PrimaryGeneratedColumn,
   Column,
   OneToMany,
-  BaseEntity,
   CreateDateColumn,
   RelationId,
   ManyToOne,
   ManyToMany
 } from "typeorm";
-import { Post } from "../post";
+import { Post } from "../post/post.entity";
 
-import { Author, User } from "../user";
+import { User } from "../user/user.entity";
+import { Author } from "../user/user.types";
 
 @ObjectType()
-export class CommunityBase extends BaseEntity {
+export class CommunityBase {
   @Field(() => Int)
   @PrimaryGeneratedColumn()
   id: number;

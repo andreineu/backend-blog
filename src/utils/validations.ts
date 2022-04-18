@@ -1,4 +1,4 @@
-import { UserRegisterArgs } from "../entity/user";
+import { UserRegisterArgs } from "../models/user/user.types";
 
 export const validateRegisterArgs = (args: UserRegisterArgs) => {
   if (!args.email.includes("@")) {
@@ -40,7 +40,7 @@ export const validateRegisterArgs = (args: UserRegisterArgs) => {
   return null;
 };
 
-export const validateRegisterError = (err) => {
+export const formatRegisterError = (err) => {
   //UQ_e12875dfb3b1d92d7d7c5377e22 duplicate email
   //UQ_78a916df40e02a9deb1c4b75edb duplicate username
   if (err.constraint === "UQ_e12875dfb3b1d92d7d7c5377e22") {

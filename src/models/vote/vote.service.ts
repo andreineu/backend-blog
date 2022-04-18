@@ -1,20 +1,10 @@
-import {
-  Arg,
-  Ctx,
-  Field,
-  Int,
-  Mutation,
-  ObjectType,
-  Resolver,
-  UseMiddleware
-} from "type-graphql";
-
-import { CommentVote, PostVote } from "../entity/vote";
-import { IsAuth } from "../utils/middleware/isAuth";
-import { MyContext } from "../types";
-import { AppDataSource } from "../data-source";
-import { Post } from "../entity/post";
-import { Comment } from "../entity/comment";
+import { ObjectType, Field } from "type-graphql";
+import { Inject, Service } from "typedi";
+import { Repository, DataSource } from "typeorm";
+import { Comment } from "../comment/comment.entity";
+import { Post } from "../post/post.entity";
+import { User } from "../user/user.entity";
+import { CommentVote, PostVote } from "./vote.entity";
 
 @ObjectType()
 class VoteResponse {
@@ -24,19 +14,37 @@ class VoteResponse {
   voted?: boolean;
 }
 
-@Resolver()
-export class VoteResolver {
-  @Mutation(() => VoteResponse, { nullable: true })
-  @UseMiddleware(IsAuth())
+@Service()
+export class VoteService {
+  constructor(
+    @Inject("userRepository")
+    private readonly userRepository: Repository<User>,
+
+    @Inject("commentRepository")
+    private readonly commentRepository: Repository<Comment>,
+
+    @Inject("AppDataSource")
+    private readonly AppDataSource: DataSource,
+
+    @Inject("postVoteRepository")
+    private readonly postVoteRepository: Repository<PostVote>,
+
+    @Inject("postRepository")
+    private readonly postRepository: Repository<Post>,
+
+    @Inject("commentVoteRepository")
+    private readonly commentVoteRepository: Repository<CommentVote>
+  ) { }
+
   async votePost(
-    @Arg("value", () => Int) value: number,
-    @Arg("postId", () => Int) postId: number,
-    @Ctx() { req }: MyContext
+    value: number,
+    postId: number,
+    userId: number
   ): Promise<VoteResponse> {
-    const { userId } = req.session;
+
     const realValue = value >= 1 ? 1 : -1;
 
-    const oldVote = await PostVote.findOne({
+    const oldVote = await this.postVoteRepository.findOne({
       where: { postId, userId }
     });
     const alreadyVoted = !!oldVote;
@@ -48,18 +56,18 @@ export class VoteResolver {
       };
     }
 
-    return await AppDataSource.transaction(async (entityManager) => {
+    return await this.AppDataSource.transaction(async (entityManager) => {
       if (alreadyVoted) {
         await entityManager.delete(PostVote, {
           userId,
-          postId,
-        })
+          postId
+        });
       } else {
         await entityManager.insert(PostVote, {
           userId,
           postId,
           value: realValue
-        })
+        });
       }
       const post = await entityManager.findOne(Post, {
         where: { id: postId },
@@ -68,8 +76,8 @@ export class VoteResolver {
 
       post.author.rating += realValue;
       post.rating += realValue;
-      post.author.save();
-      post.save();
+      this.userRepository.save(post.author);
+      this.postRepository.save(post);
 
       if (alreadyVoted) return { voted: false, message: "removed vote" };
 
@@ -79,21 +87,18 @@ export class VoteResolver {
       };
     }).catch(() => {
       return { voted: false, message: "database error" };
-    })
-
+    });
   }
 
-  @Mutation(() => VoteResponse, { nullable: true })
-  @UseMiddleware(IsAuth())
   async voteComment(
-    @Arg("value", () => Int) value: number,
-    @Arg("commentId", () => Int) commentId: number,
-    @Ctx() { req }: MyContext
+    value: number,
+    commentId: number,
+    userId: number
   ): Promise<VoteResponse> {
-    const { userId } = req.session;
+
     const realValue = value >= 1 ? 1 : -1;
 
-    const oldVote = await CommentVote.findOne({
+    const oldVote = await this.commentVoteRepository.findOne({
       where: { commentId, userId }
     });
     const alreadyVoted = !!oldVote;
@@ -105,29 +110,29 @@ export class VoteResolver {
       };
     }
 
-    return await AppDataSource.transaction(async (entityManager) => {
+    return await this.AppDataSource.transaction(async (entityManager) => {
       if (alreadyVoted) {
         await entityManager.delete(CommentVote, {
           userId,
-          commentId,
-        })
+          commentId
+        });
       } else {
         await entityManager.insert(CommentVote, {
           userId,
           commentId,
           value: realValue
-        })
+        });
       }
 
       const comment = await entityManager.findOne(Comment, {
         where: { id: commentId },
         relations: { author: true }
-      })
+      });
 
       comment.author.rating += realValue;
       comment.rating += realValue;
-      await comment.author.save();
-      await comment.save();
+      await this.userRepository.save(comment.author);
+      await this.commentRepository.save(comment);
 
       if (alreadyVoted) return { voted: false, message: "removed vote" };
 
@@ -137,7 +142,6 @@ export class VoteResolver {
       };
     }).catch(() => {
       return { voted: false, message: "database error" };
-    })
+    });
   }
 }
-

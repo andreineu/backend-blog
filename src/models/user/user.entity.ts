@@ -4,21 +4,20 @@ import {
   PrimaryGeneratedColumn,
   Column,
   OneToMany,
-  BaseEntity,
   CreateDateColumn,
   RelationId,
   ManyToMany,
   JoinTable
 } from "typeorm";
-import { Post } from "../post";
 
-import { PostVote, CommentVote } from "../vote";
-import { Comment } from "../comment";
-import { Community } from "../community";
+import { Post } from "../post/post.entity";
+import { PostVote, CommentVote } from "../vote/vote.entity";
+import { Comment } from "../comment/comment.entity";
+import { Community } from "../community/community.entity";
 
 @ObjectType()
 @Entity()
-export class User extends BaseEntity {
+export class User {
   @Field(() => Int)
   @PrimaryGeneratedColumn()
   id: number;
