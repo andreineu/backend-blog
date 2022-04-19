@@ -1,3 +1,4 @@
+import { CommunityRepositoryToken, DataSourceToken } from "src/constants";
 import { Inject, Service } from "typedi";
 import { DataSource, Repository } from "typeorm";
 import { Community } from "./community.entity"
@@ -13,10 +14,10 @@ import {
 @Service()
 export class CommunityService {
   constructor(
-    @Inject("AppDataSource")
+    @Inject(DataSourceToken)
     private readonly AppDataSource: DataSource,
 
-    @Inject("communityRepository")
+    @Inject(CommunityRepositoryToken)
     private readonly communityRepository: Repository<Community>
   ) { }
 

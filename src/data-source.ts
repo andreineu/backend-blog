@@ -1,8 +1,8 @@
 import "reflect-metadata";
-import Container from "typedi";
 import { DataSource } from "typeorm";
 
 import { db_url, __prod__ } from "./constants";
+import { injectRepositories } from "./di-setup";
 
 import { Comment } from "./models/comment/comment.entity";
 import { Community } from "./models/community/community.entity";
@@ -33,20 +33,6 @@ export const initializeConnection = async () => {
       console.error("Error during Data Source initialization:", err);
     });
 
-  const userRepository = AppDataSource.getRepository(User);
-  const postRepository = AppDataSource.getRepository(Post);
-  const commentRepository = AppDataSource.getRepository(Comment);
-  const communityRepository = AppDataSource.getRepository(Community);
-  const postVoteRepository = AppDataSource.getRepository(PostVote);
-  const commentVoteRepository = AppDataSource.getRepository(CommentVote);
+  injectRepositories()
 
-  Container.set([
-    { id: "AppDataSource", value: AppDataSource },
-    { id: "userRepository", value: userRepository },
-    { id: "postRepository", value: postRepository },
-    { id: "commentRepository", value: commentRepository },
-    { id: "communityRepository", value: communityRepository },
-    { id: "postVoteRepository", value: postVoteRepository },
-    { id: "commentVoteRepository", value: commentVoteRepository }
-  ]);
 };

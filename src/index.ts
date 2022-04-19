@@ -2,13 +2,12 @@ import "reflect-metadata";
 import { ApolloServer } from "apollo-server-express";
 import express from "express";
 import cors from "cors";
+
 import session from "express-session";
-
 import connectRedis from "connect-redis";
-
 import Redis from "ioredis"
 
-import { AppDataSource, initializeConnection } from "./data-source";
+import { initializeConnection } from "./data-source";
 
 import {
   COOKIE_NAME,

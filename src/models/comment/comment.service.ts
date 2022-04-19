@@ -1,3 +1,4 @@
+import { CommentRepositoryToken } from "src/constants";
 import { Inject, Service } from "typedi";
 import { Repository } from "typeorm";
 import { Comment } from "./comment.entity";
@@ -6,7 +7,7 @@ import { CommentInputArgs } from "./comment.types";
 @Service()
 export class CommentService {
   constructor(
-    @Inject("commentRepository")
+    @Inject(CommentRepositoryToken)
     private readonly commentRepository: Repository<Comment>
   ) { }
 

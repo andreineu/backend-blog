@@ -8,17 +8,18 @@ import { User } from "../user/user.entity";
 import { Post } from "../post/post.entity";
 
 import { SortKeys } from "src/types";
+import { CommunityRepositoryToken, PostRepositoryToken, UserRepositoryToken } from "src/constants";
 
 @Service()
 export class PostService {
   constructor(
-    @Inject("postRepository")
+    @Inject(PostRepositoryToken)
     private readonly postRepository: Repository<Post>,
 
-    @Inject("userRepository")
+    @Inject(UserRepositoryToken)
     private readonly userRepository: Repository<User>,
 
-    @Inject("communityRepository")
+    @Inject(CommunityRepositoryToken)
     private readonly communityRepository: Repository<Community>
   ) { }
 

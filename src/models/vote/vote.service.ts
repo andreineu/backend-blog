@@ -1,3 +1,4 @@
+import { CommentVoteRepositoryToken, DataSourceToken, PostVoteRepositoryToken } from "src/constants";
 import { ObjectType, Field } from "type-graphql";
 import { Inject, Service } from "typedi";
 import { Repository, DataSource, EntityManager } from "typeorm";
@@ -16,13 +17,13 @@ class VoteResponse {
 @Service()
 export class VoteService {
   constructor(
-    @Inject("AppDataSource")
+    @Inject(DataSourceToken)
     private readonly AppDataSource: DataSource,
 
-    @Inject("postVoteRepository")
+    @Inject(PostVoteRepositoryToken)
     private readonly postVoteRepository: Repository<PostVote>,
 
-    @Inject("commentVoteRepository")
+    @Inject(CommentVoteRepositoryToken)
     private readonly commentVoteRepository: Repository<CommentVote>
   ) { }
 

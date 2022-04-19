@@ -15,17 +15,18 @@ import {
   validateRegisterArgs,
   formatRegisterError
 } from "src/utils/validations";
+import { CommunityRepositoryToken, DataSourceToken, UserRepositoryToken } from "src/constants";
 
 @Service()
 export class UserService {
   constructor(
-    @Inject("userRepository")
+    @Inject(UserRepositoryToken)
     private readonly userRepository: Repository<User>,
 
-    @Inject("AppDataSource")
+    @Inject(DataSourceToken)
     private readonly AppDataSource: DataSource,
 
-    @Inject("communityRepository")
+    @Inject(CommunityRepositoryToken)
     private readonly communityRepository: Repository<Community>
   ) { }
 

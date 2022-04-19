@@ -1,4 +1,5 @@
 import DataLoader from "dataloader";
+import { CommentVoteRepositoryToken, CommunityRepositoryToken, PostRepositoryToken, PostVoteRepositoryToken, UserRepositoryToken } from "src/constants";
 import Container, { Service, Inject } from "typedi";
 import { Repository, In } from "typeorm";
 import { Community, CommunityBase } from "../models/community/community.entity";
@@ -95,16 +96,16 @@ export const createLoaders = () => {
 @Service()
 export class Loaders {
   constructor(
-    @Inject("userRepository")
+    @Inject(UserRepositoryToken)
     private readonly userRepository: Repository<User>,
 
-    @Inject("communityRepository")
+    @Inject(CommunityRepositoryToken)
     private readonly communityRepository: Repository<Community>,
 
-    @Inject("postVoteRepository")
+    @Inject(PostVoteRepositoryToken)
     private readonly postVoteRepository: Repository<PostVote>,
 
-    @Inject("commentVoteRepository")
+    @Inject(CommentVoteRepositoryToken)
     private readonly commentVoteRepository: Repository<CommentVote>
 
   ) { }
