@@ -1,6 +1,7 @@
 import { ObjectType, Field } from "type-graphql";
 import { Inject, Service } from "typedi";
-import { Repository, DataSource } from "typeorm";
+import { Repository, DataSource, EntityManager } from "typeorm";
+import { QueryDeepPartialEntity } from "typeorm/query-builder/QueryPartialEntity";
 import { Comment } from "../comment/comment.entity";
 import { Post } from "../post/post.entity";
 import { User } from "../user/user.entity";
@@ -17,131 +18,180 @@ class VoteResponse {
 @Service()
 export class VoteService {
   constructor(
-    @Inject("userRepository")
-    private readonly userRepository: Repository<User>,
-
-    @Inject("commentRepository")
-    private readonly commentRepository: Repository<Comment>,
-
     @Inject("AppDataSource")
     private readonly AppDataSource: DataSource,
 
     @Inject("postVoteRepository")
     private readonly postVoteRepository: Repository<PostVote>,
 
-    @Inject("postRepository")
-    private readonly postRepository: Repository<Post>,
-
     @Inject("commentVoteRepository")
     private readonly commentVoteRepository: Repository<CommentVote>
   ) { }
 
   async votePost(
-    value: number,
+    value: 1 | -1,
     postId: number,
     userId: number
   ): Promise<VoteResponse> {
-
-    const realValue = value >= 1 ? 1 : -1;
-
-    const oldVote = await this.postVoteRepository.findOne({
-      where: { postId, userId }
-    });
-    const alreadyVoted = !!oldVote;
-
-    if (oldVote?.value === realValue) {
-      return {
-        voted: false,
-        message: "invalid vote"
-      };
-    }
-
-    return await this.AppDataSource.transaction(async (entityManager) => {
-      if (alreadyVoted) {
-        await entityManager.delete(PostVote, {
-          userId,
-          postId
-        });
-      } else {
-        await entityManager.insert(PostVote, {
-          userId,
-          postId,
-          value: realValue
-        });
-      }
-      const post = await entityManager.findOne(Post, {
-        where: { id: postId },
-        relations: { author: true }
+    try {
+      const oldVote = await this.postVoteRepository.findOne({
+        where: { postId, userId }
       });
 
-      post.author.rating += realValue;
-      post.rating += realValue;
-      this.userRepository.save(post.author);
-      this.postRepository.save(post);
+      if (oldVote.value === value)
+        return {
+          voted: false,
+          message: "invalid vote"
+        };
 
-      if (alreadyVoted) return { voted: false, message: "removed vote" };
+      if (oldVote.value) {
+        await this.removePostVote(postId, userId, value);
+        return { voted: false, message: "removed vote" };
+      }
+
+      await this.createPostVote({ value, postId, userId });
 
       return {
         voted: true,
-        message: realValue === 1 ? "upvoted" : "downvoted"
+        message: value === 1 ? "upvoted" : "downvoted"
       };
-    }).catch(() => {
+    } catch {
       return { voted: false, message: "database error" };
-    });
+    }
   }
 
   async voteComment(
-    value: number,
+    value: 1 | -1,
     commentId: number,
     userId: number
   ): Promise<VoteResponse> {
-
-    const realValue = value >= 1 ? 1 : -1;
-
-    const oldVote = await this.commentVoteRepository.findOne({
-      where: { commentId, userId }
-    });
-    const alreadyVoted = !!oldVote;
-
-    if (oldVote?.value === realValue) {
-      return {
-        voted: false,
-        message: "invalid vote"
-      };
-    }
-
-    return await this.AppDataSource.transaction(async (entityManager) => {
-      if (alreadyVoted) {
-        await entityManager.delete(CommentVote, {
-          userId,
-          commentId
-        });
-      } else {
-        await entityManager.insert(CommentVote, {
-          userId,
-          commentId,
-          value: realValue
-        });
-      }
-
-      const comment = await entityManager.findOne(Comment, {
-        where: { id: commentId },
-        relations: { author: true }
+    try {
+      const oldVote = await this.commentVoteRepository.findOneBy({
+        commentId,
+        userId
       });
 
-      comment.author.rating += realValue;
-      comment.rating += realValue;
-      await this.userRepository.save(comment.author);
-      await this.commentRepository.save(comment);
+      if (oldVote.value === value)
+        return {
+          voted: false,
+          message: "invalid vote"
+        };
 
-      if (alreadyVoted) return { voted: false, message: "removed vote" };
+      if (oldVote.value) {
+        await this.removeCommentVote(commentId, userId, value);
+        return { voted: false, message: "removed vote" };
+      }
 
+      await this.createCommentVote({
+        value: value,
+        userId,
+        commentId
+      });
       return {
         voted: true,
-        message: realValue === 1 ? "upvoted" : "downvoted"
+        message: value === 1 ? "upvoted" : "downvoted"
       };
-    }).catch(() => {
+    } catch {
       return { voted: false, message: "database error" };
+    }
+  }
+
+
+
+  /**
+   * inserts and updates `rating` counters
+   */
+  private async createPostVote(fields: {
+    value: 1 | -1;
+    postId: number;
+    userId: number;
+  }): Promise<void> {
+    await this.AppDataSource.transaction(async (entityManager) => {
+      await entityManager.insert(PostVote, fields);
+      await this.incrementPostCounters(
+        entityManager,
+        fields.value,
+        fields.postId
+      );
     });
+  }
+
+  private async createCommentVote(fields: {
+    value: 1 | -1;
+    commentId: number;
+    userId: number;
+  }): Promise<void> {
+    await this.AppDataSource.transaction(async (entityManager) => {
+      await entityManager.insert(CommentVote, fields);
+      await this.incrementCommentCounters(
+        entityManager,
+        fields.value,
+        fields.commentId
+      );
+    });
+  }
+
+  /**
+   * removes and updates `rating` counters
+   */
+  private async removePostVote(
+    postId: number,
+    userId: number,
+    value: 1 | -1
+  ): Promise<void> {
+    await this.AppDataSource.transaction(async (entityManager) => {
+      await entityManager.delete(PostVote, {
+        userId,
+        postId
+      });
+      await this.incrementPostCounters(entityManager, value, postId);
+    });
+  }
+
+  private async removeCommentVote(
+    commentId: number,
+    userId: number,
+    value: 1 | -1
+  ): Promise<void> {
+    await this.AppDataSource.transaction(async (entityManager) => {
+      await entityManager.delete(CommentVote, {
+        userId,
+        commentId
+      });
+      await this.incrementCommentCounters(entityManager, value, commentId);
+    });
+  }
+
+  /**
+   * increments comment's and comment author's `rating` columnns
+   */
+  private async incrementPostCounters(
+    entityManager: EntityManager,
+    value: 1 | -1,
+    postId: number
+  ) {
+    const post = await entityManager.findOne(Post, {
+      where: { id: postId },
+      relations: { author: true }
+    });
+
+    post.author.rating += value;
+    post.rating += value;
+    await entityManager.save([post.author, post]);
+  }
+
+  private async incrementCommentCounters(
+    entityManager: EntityManager,
+    value: 1 | -1,
+    commentId: number
+  ) {
+    const comment = await entityManager.findOne(Comment, {
+      where: { id: commentId },
+      relations: { author: true }
+    });
+
+    comment.author.rating += value;
+    comment.rating += value;
+    await entityManager.save([comment.author, comment]);
   }
 }

@@ -100,12 +100,12 @@ export class UserService {
   }
 
   async followUser(
-    userId: number,
+    creatorId: number,
     action: FollowAction,
     { req, loaders }: MyContext
   ): Promise<Boolean> {
     return await this.AppDataSource.transaction(async (entityManager) => {
-      if (req.session.userId === userId) return false;
+      if (req.session.userId === creatorId) return false;
       loaders.user.clear(req.session.userId);
 
       const user = await entityManager.findOne(User, {
@@ -113,15 +113,15 @@ export class UserService {
         relations: { followingUsers: true }
       });
 
-      const creator = await entityManager.findOneBy(User, { id: userId });
+      const creator = await entityManager.findOneBy(User, { id: creatorId });
 
       if (!creator || !user) return false;
 
       if (action === FollowAction.UNFOLLOW) {
-        if (!user.followingUserIds.includes(userId)) return false;
+        if (!user.followingUserIds.includes(creatorId)) return false;
 
         user.followingUsers = user.followingUsers.filter(
-          (u) => u.id !== userId
+          (u) => u.id !== creatorId
         );
         creator.totalFollowers--;
         this.userRepository.save(user);
@@ -130,7 +130,7 @@ export class UserService {
         return true;
       }
 
-      if (user.followingUserIds.includes(userId)) return false;
+      if (user.followingUserIds.includes(creatorId)) return false;
 
       user.followingUsers = [...(user.followingUsers || []), creator];
       creator.totalFollowers++;

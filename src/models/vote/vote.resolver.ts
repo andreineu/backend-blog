@@ -34,7 +34,9 @@ export class VoteResolver {
     @Arg("postId", () => Int) postId: number,
     @Ctx() { req }: MyContext
   ): Promise<VoteResponse> {
-    return this.voteService.votePost(value, postId, req.session.userId)
+    const realValue = value >= 1 ? 1 : -1;
+
+    return this.voteService.votePost(realValue, postId, req.session.userId)
 
   }
 
@@ -45,7 +47,9 @@ export class VoteResolver {
     @Arg("commentId", () => Int) commentId: number,
     @Ctx() { req }: MyContext
   ): Promise<VoteResponse> {
-    return this.voteService.voteComment(value, commentId, req.session.userId)
+    const realValue = value >= 1 ? 1 : -1
+
+    return this.voteService.voteComment(realValue, commentId, req.session.userId)
   }
 }
 

@@ -12,7 +12,6 @@ import {
   UseMiddleware
 } from "type-graphql";
 
-
 import { Post } from "./post.entity";
 import { PostService } from "./post.service";
 import { GetPostsArgs, PaginatedPosts, PostInputArgs } from "./post.types";
@@ -23,12 +22,12 @@ import { MyContext } from "src/types";
 import { Service } from "typedi";
 
 @Service()
-@Resolver((of) => Post)
+@Resolver(Post)
 export class PostResolver implements ResolverInterface<Post> {
   constructor(private readonly postService: PostService) { }
 
   @FieldResolver(() => Int, { nullable: true })
-  @UseMiddleware(IsAuth({ throwError: false, returnValue: null }))
+  @UseMiddleware(IsAuth({ returnValue: null }))
   async voteStatus(@Root() post: Post, @Ctx() { req, loaders }: MyContext) {
     const vote = await loaders.postVote.load({
       postId: post.id,
