@@ -1,5 +1,5 @@
 import DataLoader from "dataloader";
-import { CommentVoteRepositoryToken, CommunityRepositoryToken, PostRepositoryToken, PostVoteRepositoryToken, UserRepositoryToken } from "src/constants";
+import { CommentVoteRepositoryToken, CommunityRepositoryToken, PostVoteRepositoryToken, UserRepositoryToken } from "src/constants";
 import Container, { Service, Inject } from "typedi";
 import { Repository, In } from "typeorm";
 import { Community, CommunityBase } from "../models/community/community.entity";
@@ -18,13 +18,13 @@ type CommentVoteLoaderKeys = {
 
 export const createLoaders = () => {
 
-  const userRepository: Repository<User> = Container.get("userRepository")
+  const userRepository = Container.get(UserRepositoryToken)
 
-  const communityRepository: Repository<Community> = Container.get("communityRepository")
+  const communityRepository = Container.get(CommunityRepositoryToken)
 
-  const postVoteRepository: Repository<PostVote> = Container.get("postVoteRepository")
+  const postVoteRepository = Container.get(PostVoteRepositoryToken)
 
-  const commentVoteRepository: Repository<CommentVote> = Container.get("commentVoteRepository")
+  const commentVoteRepository = Container.get(CommentVoteRepositoryToken)
 
   return {
     user: new DataLoader<number, User>(async (userIds) => {
