@@ -1,10 +1,8 @@
 import { ObjectType, Field } from "type-graphql";
 import { Inject, Service } from "typedi";
 import { Repository, DataSource, EntityManager } from "typeorm";
-import { QueryDeepPartialEntity } from "typeorm/query-builder/QueryPartialEntity";
 import { Comment } from "../comment/comment.entity";
 import { Post } from "../post/post.entity";
-import { User } from "../user/user.entity";
 import { CommentVote, PostVote } from "./vote.entity";
 
 @ObjectType()
