@@ -1,24 +1,19 @@
 # Backend
 
-# [click here to check preview of application](https://andreineu.ru)
+# Stack
 
-### [click here to check frontend](https://github.com/andreineu/blog-client)
-
-# used stack
-
-#### core:
-- node
+- nodejs
 - express
 - apollo-server-express
 - type-graphql
 - typeorm
 - dataloder
 
-#### session: 
+#### authentication: 
 - express-session
 - redis
 
-## Steps to run this project:
+# How to run this project:
 
 1. Run `npm i` command
 2. Setup env variables
